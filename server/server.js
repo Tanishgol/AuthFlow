@@ -27,16 +27,19 @@ app.use(helmet());
 // CORS configuration
 // CLIENT_URL may hold a comma-separated list, e.g.
 // "https://my-app.vercel.app,http://localhost:5173"
+// Trailing slashes are stripped because browser Origin headers never have one.
+const stripTrailingSlash = (url) => url.replace(/\/+$/, '');
+
 const allowedOrigins = config.clientUrl
   .split(',')
-  .map((origin) => origin.trim())
+  .map((origin) => stripTrailingSlash(origin.trim()))
   .filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (health checks, curl, mobile apps)
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(stripTrailingSlash(origin))) {
         return callback(null, true);
       }
       return callback(new Error(`Origin ${origin} not allowed by CORS`));
