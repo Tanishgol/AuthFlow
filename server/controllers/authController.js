@@ -1,8 +1,7 @@
 import User from '../models/User.js';
-import { sendTokenResponse } from '../utils/jwt.js';
+import { sendTokenResponse, getCookieOptions } from '../utils/jwt.js';
 import { generateOTP, getOTPExpiry, isOTPExpired } from '../utils/otp.js';
 import { sendOTPEmail, sendWelcomeEmail } from '../services/email.js';
-import config from '../config/env.js';
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -81,10 +80,8 @@ export const login = async (req, res, next) => {
 export const logout = async (req, res, next) => {
   try {
     res.cookie('token', 'none', {
+      ...getCookieOptions(),
       expires: new Date(Date.now() + 10 * 1000),
-      httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: 'strict',
     });
 
     res.status(200).json({
