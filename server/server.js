@@ -42,7 +42,12 @@ app.use(
       if (!origin || allowedOrigins.includes(stripTrailingSlash(origin))) {
         return callback(null, true);
       }
-      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+      // Deny gracefully: do NOT throw. Throwing here propagates to the error
+      // handler as a 500 with no CORS headers. Returning false simply omits
+      // Access-Control-Allow-Origin, so the browser blocks it (correct) while
+      // the server stays healthy and never 500s on an unknown origin.
+      console.warn(`⚠️  Blocked CORS request from origin: ${origin}`);
+      return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
